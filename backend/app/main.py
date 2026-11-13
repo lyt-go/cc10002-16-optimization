@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.routers import ROUTERS
+from app.services.cost import CostService
 from app.store import store
 
 app = FastAPI(title="数仓分层建模与治理平台", version="1.0.0")
@@ -24,6 +25,10 @@ app.add_middleware(
 
 for module in ROUTERS:
     app.include_router(module.router)
+
+# 账单版本由补数记录与扫描批次统一推导：store 与各服务加载完成后再初始化首份账单，
+# 避免 store <-> service 模块级循环导入。
+CostService().bootstrap()
 
 
 @app.get("/api/health")
